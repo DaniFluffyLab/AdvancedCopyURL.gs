@@ -11,11 +11,9 @@
  * @param {string} [params.savetosheet_findid] - ID da linha na planilha para onde se deseja salvar o link
  * @param {string} [params.savetosheet_findcol] - Nome da coluna onde ficará o link na planilha para onde se deseja salvar o link
  * @returns {object} Objeto com status HTTP, link (response) e observações
- * 
- * 
 */
 
-function run(params = {}) {
+function newFile(params = {}) {
 
     // Define resposta final do script
     let result = {
@@ -62,7 +60,7 @@ function run(params = {}) {
 
             default:
                 throw Error(`Parameter "type" is not valid`)
-        }
+        }run
 
 
         // Cria o link de retorno
