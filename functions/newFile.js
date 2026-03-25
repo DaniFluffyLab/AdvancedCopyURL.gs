@@ -60,7 +60,7 @@ function newFile(params = {}) {
 
             default:
                 throw Error(`Parameter "type" is not valid`)
-        }run
+        }
 
 
         // Cria o link de retorno

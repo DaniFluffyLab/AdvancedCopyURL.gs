@@ -13,7 +13,7 @@ function doGet(e) {
     }
 
     // WEB APP
-    let html = HtmlService.createHtmlTemplateFromFile('http/index.html')
+    let html = HtmlService.createTemplateFromFile('http/index.html')
     html.params = params
     return html.evaluate()
         .setTitle(`Criando ${params.name || "arquivo"}...`)
@@ -54,7 +54,7 @@ function doPost(e) {
     }
 
     // MODO API
-    let result = run(params);
+    let result = newFile(params);
     return ContentService.createTextOutput(JSON.stringify(result))
         .setMimeType(ContentService.MimeType.JSON);
 }
