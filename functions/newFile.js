@@ -4,6 +4,10 @@
  * @param {string} [params.from] - ID do arquivo de origem
  * @param {string} [params.to] - ID da pasta destino do novo item
  * @param {object} [params.replace] - Objeto Key-Value, onde a Key é o valor a se encontrar, e o Value é o valor a se substituir no arquivo  
+ * @param {string} [params.replacefromsheet_fileid] - ID da planilha para onde se deseja obter os dados
+ * @param {string} [params.replacefromsheet_tablename] - Nome da tabela da planilha para onde se deseja obter os dados
+ * @param {string} [params.replacefromsheet_idcolname] - Nome da coluna de ID na planilha para onde se deseja obter os dados
+ * @param {string} [params.replacefromsheet_findid] - ID da linha na planilha para onde se deseja obter os dados
  * @param {string} [params.format="url"] - Formato desejado do link retornado
  * @param {string} [params.savetosheet_fileid] - ID da planilha para onde se deseja salvar o link
  * @param {string} [params.savetosheet_tablename] - Nome da tabela da planilha para onde se deseja salvar o link
@@ -24,6 +28,23 @@ function newFile(params = {}) {
 
     let newItemID, newItemURL = undefined                           // Armazena ID e URL do novo arquivo ou pasta
     if (!params.to) params.to = DriveApp.getRootFolder().getId()    // Utiliza pasta raiz se sem destino
+
+    // Caso tenha solicitado substituição usando dados de uma planilha
+    if (params.replacefromsheet_fileid) try {
+        
+        // Carrega a planilha para consulta
+        let replaceSheet = new Codex(params.replacefromsheet_fileid, params.replacefromsheet_tablename, params.replacefromsheet_idcolname)
+        let entry = replaceSheet.get(params.replacefromsheet_findid)
+
+        // Adiciona os campos de substituição no objeto
+        params.replace = params.replace || {}
+        for (let key of Object.keys(entry)) params.replace[key] = String(entry[key])
+
+    } catch (e) {
+        result.status = 201
+        let msg = `Unable to load data from sheet: ${e.message}`
+        result.observation = result.observation ? `${result.observation} | ${msg}` : msg 
+    }
 
     // Cria ou copia com base no tipo
     try {
@@ -95,7 +116,8 @@ function newFile(params = {}) {
         }
     } catch (e) {
         result.status = 201
-        result.observation = `Unable to save to sheet: ${e.message}`
+        let msg = `Unable to save to sheet: ${e.message}`
+        result.observation = result.observation ? `${result.observation} | ${msg}` : msg 
     }
 
     // Encerra a execução
