@@ -51,6 +51,81 @@ function RE2escape(text) {
 }
 
 /**
+ * Converte um objeto JavaScript em um novo objeto onde todos os valores são convertidos em strings.
+ *
+ * @param {object} obj O objeto JavaScript a ser convertido.
+ * @returns {object} Um novo objeto com todos os valores convertidos para string.
+ * @throws {TypeError} Se o argumento não for um objeto.
+ */
+function objValuesToString(obj) {
+
+    /** Helper para converter objeto em string */
+    function helper_convert(value, depth = 0) {
+
+        // Vars usadas no switch
+        let convertedValue, jsonValue;
+
+        // Converte dado baseado no tipo
+        switch (typeof value) {
+
+            // Converte tipos simples
+            case 'number':
+            case 'boolean':
+            case 'bigint':
+            case 'string':
+                return String(value);
+
+            // Converte undefined em string vazia
+            case 'undefined':
+                return "";
+
+            // Para tipos avançados
+            case 'object':
+
+                // NULL - String vazia
+                if (value === null) return ""
+
+                // DATAS - Data formatada
+                if (value instanceof Date) return value.toLocaleString()
+
+                // REGEX - Converte para string
+                if (value instanceof RegExp) return value.toString()
+
+                // ARRAY ou SET - Converte em JSON
+                if ((value instanceof Set || value instanceof Array)) {
+                    convertedValue = [...value]                     // Cria cópia de segurança
+                    jsonValue = JSON.stringify(convertedValue)      // Converte dados
+                    return jsonValue                                // Retorna resultados
+                }
+
+                // MAP - Converte em Objeto JSON
+                if (value instanceof Map) {
+
+                    convertedValue = [...value.entries()]                               // Obtém o encadeamento chave / valor
+                    jsonValue = JSON.stringify(Object.fromEntries(convertedValue))      // Converte para JSON
+                    return jsonValue                                                    // Retorna resultado
+                }
+
+                // OBJETO LITERAL - Converte em JSON
+                if (Object.prototype.toString.call(value) === '[object Object]') return JSON.stringify(value)
+
+            default:
+                // Retorna string convertida de forma genérica
+                return String(value)
+        }
+    }
+
+    // Objeto de saída
+    let convertedObj = {}
+
+    // Converte todos os valores
+    for (let key of Object.keys(obj)) convertedObj[key] = helper_convert(obj[key])
+    
+    // Retorna objeto
+    return convertedObj
+}
+
+/**
  * Gera o link do arquivo no formato de exportação desejado.
  * @param {string} id - ID do arquivo
  * @param {string} [format="url"] - Formato desejado (ex: "url", "pdf", "docx", "xlsx", "download", "published")
@@ -113,7 +188,7 @@ function generateLink(id, format = "url") {
             case "application/vnd.google-apps.form":
                 if (format === "published") return FormApp.openById(id).getPublishedUrl();
                 return `https://drive.google.com/open?id=${id}`;
-            
+
             // Caso outros formatos
             default:
                 if (format === "download") return DriveApp.getFileById(id).getDownloadUrl() || `https://drive.google.com/open?id=${id}`;

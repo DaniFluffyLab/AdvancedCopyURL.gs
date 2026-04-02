@@ -38,13 +38,16 @@ function newFile(params = {}) {
 
         // Adiciona os campos de substituição no objeto
         params.replace = params.replace || {}
-        for (let key of Object.keys(entry)) params.replace[key] = String(entry[key])
+        for (let key of Object.keys(entry)) params.replace[key] = entry[key]
 
     } catch (e) {
         result.status = 201
         let msg = `Unable to load data from sheet: ${e.message}`
         result.observation = result.observation ? `${result.observation} | ${msg}` : msg 
     }
+
+    // Garante a conversão adequada de todos os nomes utilizados
+    if (params.replace) params.replace = objValuesToString(params.replace)
 
     // Cria ou copia com base no tipo
     try {
